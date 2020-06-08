@@ -4,38 +4,56 @@ using System.Collections.Generic;
 
 namespace Interpretator
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
-        {//entrance file
+        public static void Main(string[] args)
+        {
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+            string result = NewInput();
+
+            Console.WriteLine();
+            {
+                try
+                {
+                    Interpretator.Parser interpreter = new Interpretator.Parser(result);
+                    Interpretator.Expression node = interpreter.Parse();
+
+                    Console.WriteLine($"Ответ: {node.Accept(new Interpretator.BuilderValue())}");
+                }
+                catch (Interpretator.InvalidSyntaxException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+            }
+        }
+        public static string NewInput()
+        {
+            Console.WriteLine("Входные данные:");
             int count = -1;
-            List<string> strArr = new List<string>();
+            StreamReader file = new StreamReader("Input.txt");
             string line;
-           
-             strArr.Add("c = 10");
-            strArr.Add("sdfkjsdbjb = 910");
-            strArr.Add("sdfkjsdbjb/c");
-             
-             count=2;
-           
+            //ArrayList arrstr = new ArrayList();
+            List<string> strArr = new List<string>();
+            while ((line = file.ReadLine()) != null)
+            {
+                strArr.Add(line);
+                Console.WriteLine(line);
+                count++;
+            }
             string result = strArr[count];
-            strArr.RemoveAt(count);
-            System.Console.WriteLine(result);
             strArr.RemoveAt(count);
             for (int i = 0; i < strArr.Count; i++)
             {
                 string[] str = strArr[i].Split(" = ");
                 result = result.Replace(str[0], str[1]);
             }
-            string x  = System.Console.ReadLine();
-            Interpretator.Parser interpreter = new Interpretator.Parser(result);
-            Interpretator.Expression node = interpreter.Parse();
-            using (StreamWriter sw = new StreamWriter("result.txt", false, System.Text.Encoding.Default))
-            {
-                sw.WriteLine(node.Accept(new Interpretator.BuilderValue()));
-            }
-            Console.WriteLine($"Ответ: {node.Accept(new Interpretator.BuilderValue())}");
-            Console.WriteLine("Hello World!");
+
+            return result;
         }
     }
+
 }
