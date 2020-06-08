@@ -6,6 +6,16 @@ namespace Interpretator
 {
  public   class Parse
     {
+        public enum TokenType
+        {
+            Plus,
+            Minus,
+            Multiply,
+            Divide,
+            Number, None, LeftParenthesis, RightParenthesis
+
+
+        }
         private Token currentToken;
         private int currentPos;
         private int charCount;
@@ -20,15 +30,23 @@ namespace Interpretator
             this.currentPos = -1;
             this.Advance();
         }
-        public enum Actions
+        internal Expression Parce()
         {
-            Plus,
-                Minus,
-                Multiply,
-                Divide,
-                Number, None, LeftParenthesis, RightParenthesis
-
-
+            this.NextToken();
+            Expression node = this.GrabExpr();
+            this.ExpectToken(TokenType.None);
+            return node;
         }
+
+        private Token ExpectToken(TokenType tokenType)
+        {
+            if (this.currentToken.Type == tokenType)
+            {
+                return this.currentToken;
+            }
+         
+        }
+
+    
     }
 }
