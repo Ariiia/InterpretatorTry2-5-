@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Interpretator
@@ -18,8 +19,8 @@ namespace Interpretator
         {
         }
 
-        //protected InvalidSyntaxException(SerializationInfo info, StreamingContext context) : base(info, context)
-        //{
-        //}
+        protected InvalidSyntaxException(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
     }
 }

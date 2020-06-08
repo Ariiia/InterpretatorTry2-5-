@@ -189,7 +189,7 @@ namespace Interpretator
                 return;
             }
 
-            if (this.curChar == '/')
+            if (this.curChar == ('/')|| this.curChar==(':'))
             {
                 this.curToken = new Token(TokenType.Divide, this.curChar.ToString());
                 this.Advance();
@@ -234,7 +234,7 @@ namespace Interpretator
                     }
                     else
                     {
-                        throw new InvalidSyntaxException(string.Format("Invalid syntax at position {0}. Unexpected symbol {1}.", this.curPos, this.curChar));
+                        throw new InvalidSyntaxException(string.Format("Wrong syntax at first position {0}. Unexpected symbol {1}.", this.curPos, this.curChar));
                     }
                 }
 
