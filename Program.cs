@@ -32,9 +32,9 @@ namespace Interpretator
             Interpretator.Expression node = interpreter.Parse();
             using (StreamWriter sw = new StreamWriter("result.txt", false, System.Text.Encoding.Default))
             {
-                sw.WriteLine(node.Accept(new Interpretator.ValueBuilder()));
+                sw.WriteLine(node.Accept(new Interpretator.BuilderValue()));
             }
-            Console.WriteLine($"Ответ: {node.Accept(new Interpretator.ValueBuilder())}");
+            Console.WriteLine($"Ответ: {node.Accept(new Interpretator.BuilderValue())}");
             Console.WriteLine("Hello World!");
         }
     }

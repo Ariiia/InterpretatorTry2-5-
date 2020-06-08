@@ -16,7 +16,7 @@ namespace Interpretator
 
 
     }
-    internal class Parse
+    internal class Parser
     {
 
         public string Text { get; private set; }
@@ -39,7 +39,7 @@ namespace Interpretator
             }
         }
 
-        public Parse(string text)
+        public Parser(string text)
         {
             this.Text = string.IsNullOrEmpty(text) ? string.Empty : text;
             this.charCount = this.Text.Length;
@@ -48,22 +48,72 @@ namespace Interpretator
             this.currentPos = -1;
             this.Advance();
         }
-        internal Expression Parce()
+        internal Expression Parse()
         {
             this.NextToken();
             Expression node = this.GrabExpr();
             this.ExpectToken(TokenType.None);
             return node;
         }
+        internal Expression Parse()
+        {
+            this.NextToken();
+            Expression node = this.GrabExpr();
+            this.ExpectToken(TokenType.None);
+            return node;
+        }
+        private Token ExpectToken(TokenType tokenType)
+        {
+            if (this.currentToken.Type == tokenType)
+            {
+                return this.currentToken;
+            }
+            else
+            {
+                throw new InvalidSyntaxException(string.Format("Invalid syntax at position {0}. Expected {1} but {2} is given.", this.currentPos, tokenType, this.currentToken.Type.ToString()));
+            }
+        }
 
-        private Expression GrabExpr()
+        internal class UnaryOp : Expression
+        {
+            internal Token Op { get; private set; }
+            internal Expression Node { get; private set; }
+
+            public UnaryOp(Token op, Expression node)
+            {
+                this.Op = op;
+                this.Node = node;
+            }
+
+     
+
+        internal class BinOp : Expression
+        {
+            internal Token Op { get; private set; }
+            internal Expression Left { get; private set; }
+            internal Expression Right { get; private set; }
+
+            public BinOp(Token op, Expression left, Expression right)
+            {
+                this.Op = op;
+                this.Left = left;
+                this.Right = right;
+            }
+
+            override public object Accept(INodeVisitor visitor)
+            {
+                return visitor.VisitBinOp(this.Op, this.Left, this.Right);
+            }
+        }
+
+        public Expression GrabExpr()
         {
             Expression left = this.GrabTerm();
 
-            while (this.curToken.Type == TokenType.Plus
-                || this.curToken.Type == TokenType.Minus)
+            while (this.currentToken.Type == TokenType.Plus
+                || this.currentToken.Type == TokenType.Minus)
             {
-                Token op = this.curToken;
+                Token op = this.currentToken;
                 this.NextToken();
                 Expression right = this.GrabTerm();
                 left = new BinOp(op, left, right);
@@ -76,10 +126,10 @@ namespace Interpretator
         {
             Expression left = this.GrabFactor();
 
-            while (this.curToken.Type == TokenType.Multiply
-                || this.curToken.Type == TokenType.Divide)
+            while (this.currentToken.Type == TokenType.Multiply
+                || this.currentToken.Type == TokenType.Divide)
             {
-                Token op = this.curToken;
+                Token op = this.currentToken;
                 this.NextToken();
                 Expression right = this.GrabFactor();
                 left = new BinOp(op, left, right);
