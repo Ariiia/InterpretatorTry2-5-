@@ -16,7 +16,7 @@ namespace Interpretator
             strArr.Add("sdfkjsdbjb = 910");
             strArr.Add("sdfkjsdbjb/c");
              
-             count=3;
+             count=2;
            
             string result = strArr[count];
             strArr.RemoveAt(count);

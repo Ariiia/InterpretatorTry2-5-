@@ -18,8 +18,8 @@ namespace Interpretator
         {
         }
 
-        protected InvalidSyntaxException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+        //protected InvalidSyntaxException(SerializationInfo info, StreamingContext context) : base(info, context)
+        //{
+        //}
     }
 }

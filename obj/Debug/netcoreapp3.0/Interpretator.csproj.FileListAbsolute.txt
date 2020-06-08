@@ -1,0 +1,11 @@
+C:\Users\koala\Source\Repos\Interpretator\bin\Debug\netcoreapp3.0\Interpretator.exe
+C:\Users\koala\Source\Repos\Interpretator\bin\Debug\netcoreapp3.0\Interpretator.deps.json
+C:\Users\koala\Source\Repos\Interpretator\bin\Debug\netcoreapp3.0\Interpretator.runtimeconfig.json
+C:\Users\koala\Source\Repos\Interpretator\bin\Debug\netcoreapp3.0\Interpretator.runtimeconfig.dev.json
+C:\Users\koala\Source\Repos\Interpretator\bin\Debug\netcoreapp3.0\Interpretator.dll
+C:\Users\koala\Source\Repos\Interpretator\bin\Debug\netcoreapp3.0\Interpretator.pdb
+C:\Users\koala\Source\Repos\Interpretator\obj\Debug\netcoreapp3.0\Interpretator.csprojAssemblyReference.cache
+C:\Users\koala\Source\Repos\Interpretator\obj\Debug\netcoreapp3.0\Interpretator.AssemblyInfoInputs.cache
+C:\Users\koala\Source\Repos\Interpretator\obj\Debug\netcoreapp3.0\Interpretator.AssemblyInfo.cs
+C:\Users\koala\Source\Repos\Interpretator\obj\Debug\netcoreapp3.0\Interpretator.dll
+C:\Users\koala\Source\Repos\Interpretator\obj\Debug\netcoreapp3.0\Interpretator.pdb

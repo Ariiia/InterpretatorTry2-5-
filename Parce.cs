@@ -1,53 +1,40 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
-using System.Linq.Expressions;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Interpretator
 {
-
     internal enum TokenType
     {
+        None,
         Plus,
         Minus,
         Multiply,
         Divide,
-        Number, None, LeftParenthesis, RightParenthesis
-
-
+        Number,
+        LeftParenthesis,
+        RightParenthesis
     }
     internal class Parser
     {
-
-        public string Text { get; private set; }
-
-        private Token currentToken;
-        private int currentPos;
+        private Token curToken;
+        private int curPos;
         private int charCount;
-        private char currentChar;
-        private void Advance()
-        {
-            this.currentPos += 1;
-
-            if (this.currentPos < this.charCount)
-            {
-                this.currentChar = this.Text[this.currentPos];
-            }
-            else
-            {
-                this.currentChar = char.MinValue;
-            }
-        }
+        private char curChar;
+        public string Text { get; private set; }
 
         public Parser(string text)
         {
             this.Text = string.IsNullOrEmpty(text) ? string.Empty : text;
             this.charCount = this.Text.Length;
-            this.currentToken = Token.None();
+            this.curToken = Token.None();
 
-            this.currentPos = -1;
+            this.curPos = -1;
             this.Advance();
         }
+
         internal Expression Parse()
         {
             this.NextToken();
@@ -55,65 +42,27 @@ namespace Interpretator
             this.ExpectToken(TokenType.None);
             return node;
         }
-        internal Expression Parse()
-        {
-            this.NextToken();
-            Expression node = this.GrabExpr();
-            this.ExpectToken(TokenType.None);
-            return node;
-        }
+
         private Token ExpectToken(TokenType tokenType)
         {
-            if (this.currentToken.Type == tokenType)
+            if (this.curToken.Type == tokenType)
             {
-                return this.currentToken;
+                return this.curToken;
             }
             else
             {
-                throw new InvalidSyntaxException(string.Format("Invalid syntax at position {0}. Expected {1} but {2} is given.", this.currentPos, tokenType, this.currentToken.Type.ToString()));
+                throw new InvalidSyntaxException(string.Format("Invalid syntax at position {0}. Expected {1} but {2} is given.", this.curPos, tokenType, this.curToken.Type.ToString()));
             }
         }
 
-        internal class UnaryOp : Expression
-        {
-            internal Token Op { get; private set; }
-            internal Expression Node { get; private set; }
-
-            public UnaryOp(Token op, Expression node)
-            {
-                this.Op = op;
-                this.Node = node;
-            }
-
-     
-
-        internal class BinOp : Expression
-        {
-            internal Token Op { get; private set; }
-            internal Expression Left { get; private set; }
-            internal Expression Right { get; private set; }
-
-            public BinOp(Token op, Expression left, Expression right)
-            {
-                this.Op = op;
-                this.Left = left;
-                this.Right = right;
-            }
-
-            override public object Accept(INodeVisitor visitor)
-            {
-                return visitor.VisitBinOp(this.Op, this.Left, this.Right);
-            }
-        }
-
-        public Expression GrabExpr()
+        private Expression GrabExpr()
         {
             Expression left = this.GrabTerm();
 
-            while (this.currentToken.Type == TokenType.Plus
-                || this.currentToken.Type == TokenType.Minus)
+            while (this.curToken.Type == TokenType.Plus
+                || this.curToken.Type == TokenType.Minus)
             {
-                Token op = this.currentToken;
+                Token op = this.curToken;
                 this.NextToken();
                 Expression right = this.GrabTerm();
                 left = new BinOp(op, left, right);
@@ -126,10 +75,10 @@ namespace Interpretator
         {
             Expression left = this.GrabFactor();
 
-            while (this.currentToken.Type == TokenType.Multiply
-                || this.currentToken.Type == TokenType.Divide)
+            while (this.curToken.Type == TokenType.Multiply
+                || this.curToken.Type == TokenType.Divide)
             {
-                Token op = this.currentToken;
+                Token op = this.curToken;
                 this.NextToken();
                 Expression right = this.GrabFactor();
                 left = new BinOp(op, left, right);
@@ -140,13 +89,13 @@ namespace Interpretator
 
         private Expression GrabFactor()
         {
-            if (this.currentToken.Type == TokenType.Plus
-                || this.currentToken.Type == TokenType.Minus)
+            if (this.curToken.Type == TokenType.Plus
+                || this.curToken.Type == TokenType.Minus)
             {
                 Expression node = this.GrabUnaryExpr();
                 return node;
             }
-            else if (this.currentToken.Type == TokenType.LeftParenthesis)
+            else if (this.curToken.Type == TokenType.LeftParenthesis)
             {
                 Expression node = this.GrabBracketExpr();
                 return node;
@@ -163,7 +112,7 @@ namespace Interpretator
         {
             Token op;
 
-            if (this.currentToken.Type == TokenType.Plus)
+            if (this.curToken.Type == TokenType.Plus)
             {
                 op = this.ExpectToken(TokenType.Plus);
             }
@@ -174,8 +123,8 @@ namespace Interpretator
 
             this.NextToken();
 
-            if (this.currentToken.Type == TokenType.Plus
-                || this.currentToken.Type == TokenType.Minus)
+            if (this.curToken.Type == TokenType.Plus
+                || this.curToken.Type == TokenType.Minus)
             {
                 Expression expr = this.GrabUnaryExpr();
                 return new UnaryOp(op, expr);
@@ -186,116 +135,185 @@ namespace Interpretator
                 return new UnaryOp(op, expr);
             }
         }
+
+        private Expression GrabBracketExpr()
+        {
+            this.ExpectToken(TokenType.LeftParenthesis);
+            this.NextToken();
+            Expression node = this.GrabExpr();
+            this.ExpectToken(TokenType.RightParenthesis);
+            this.NextToken();
+            return node;
+        }
+
         private void NextToken()
         {
-            if (this.currentChar == char.MinValue)
+            if (this.curChar == char.MinValue)
             {
-                this.currentToken = Token.None();
+                this.curToken = Token.None();
                 return;
             }
 
-            if (this.currentChar == ' ')
+            if (this.curChar == ' ')
             {
-                while (this.currentChar != char.MinValue && this.currentChar == ' ')
+                while (this.curChar != char.MinValue && this.curChar == ' ')
                 {
                     this.Advance();
                 }
 
-                if (this.currentChar == char.MinValue)
+                if (this.curChar == char.MinValue)
                 {
-                    this.currentToken = Token.None();
+                    this.curToken = Token.None();
                     return;
                 }
             }
 
-            if (this.currentChar == '+')
+            if (this.curChar == '+')
             {
-                this.currentChar = new Token(TokenType.Plus, this.currentChar.ToString());
+                this.curToken = new Token(TokenType.Plus, this.curChar.ToString());
                 this.Advance();
                 return;
             }
 
-            if (this.currentChar == '-')
+            if (this.curChar == '-')
             {
-                this.currentChar = new Token(TokenType.Minus, this.currentChar.ToString());
+                this.curToken = new Token(TokenType.Minus, this.curChar.ToString());
                 this.Advance();
                 return;
             }
 
-            if (this.currentChar == '*')
+            if (this.curChar == '*')
             {
-                this.currentToken = new Token(TokenType.Multiply, this.currentChar.ToString());
+                this.curToken = new Token(TokenType.Multiply, this.curChar.ToString());
                 this.Advance();
                 return;
             }
 
-            if (this.currentChar == '/')
+            if (this.curChar == '/')
             {
-                this.currentChar = new Token(TokenType.Divide, this.currentChar.ToString());
+                this.curToken = new Token(TokenType.Divide, this.curChar.ToString());
                 this.Advance();
                 return;
             }
 
-            if (this.currentChar == '(')
+            if (this.curChar == '(')
             {
-                this.currentChar = new Token(TokenType.LeftParenthesis, this.currentChar.ToString());
+                this.curToken = new Token(TokenType.LeftParenthesis, this.curChar.ToString());
                 this.Advance();
                 return;
             }
 
-            if (this.currentChar == ')')
+            if (this.curChar == ')')
             {
-                this.currentToken = new Token(TokenType.RightParenthesis, this.currentChar.ToString());
+                this.curToken = new Token(TokenType.RightParenthesis, this.curChar.ToString());
                 this.Advance();
                 return;
             }
 
-            if (this.currentChar >= '0' && this.currentChar <= '9')
+            if (this.curChar >= '0' && this.curChar <= '9')
             {
                 string num = string.Empty;
-                while (this.currentChar >= '0' && this.currentChar <= '9')
+                while (this.curChar >= '0' && this.curChar <= '9')
                 {
-                    num += this.currentChar.ToString();
+                    num += this.curChar.ToString();
                     this.Advance();
                 }
 
-                if (this.currentChar == '.')
+                if (this.curChar == '.')
                 {
-                    num += this.currentChar.ToString();
+                    num += this.curChar.ToString();
                     this.Advance();
 
-                    if (this.currentChar >= '0' && this.currentChar <= '9')
+                    if (this.curChar >= '0' && this.curChar <= '9')
                     {
-                        while (this.currentChar >= '0' && this.currentChar <= '9')
+                        while (this.curChar >= '0' && this.curChar <= '9')
                         {
-                            num += this.currentChar.ToString();
+                            num += this.curChar.ToString();
                             this.Advance();
                         }
                     }
                     else
                     {
-                        throw new InvalidSyntaxException(string.Format("Invalid syntax at position {0}. Unexpected symbol {1}.", this.currentPos, this.currentChar));
+                        throw new InvalidSyntaxException(string.Format("Invalid syntax at position {0}. Unexpected symbol {1}.", this.curPos, this.curChar));
                     }
                 }
 
-                this.currentToken = new Token(TokenType.Number, num);
+                this.curToken = new Token(TokenType.Number, num);
                 return;
             }
 
-            throw new InvalidSyntaxException(string.Format("Invalid syntax at position {0}. Unexpected symbol {1}.", this.currentPos, this.currentChar));
+            throw new InvalidSyntaxException(string.Format("Invalid syntax at position {0}. Unexpected symbol {1}.", this.curPos, this.curChar));
         }
-        private  Token ExpectToken(TokenType tokenType)
+
+        private void Advance()
         {
-            if (this.currentToken.Type == tokenType)
+            this.curPos += 1;
+
+            if (this.curPos < this.charCount)
             {
-                return this.currentToken;
+                this.curChar = this.Text[this.curPos];
             }
             else
             {
-                throw new InvalidSyntaxException(string.Format("Invalid syntax at position {0}. Expected {1} but {2} is given.", this.currentPos, tokenType, this.currentToken.Type.ToString()));
+                this.curChar = char.MinValue;
             }
         }
+    }
 
-        
-    } }
+    internal abstract class Expression : INode
+    {
+        abstract public object Accept(INodeVisitor visitor);
+    }
 
+    internal class Num : Expression
+    {
+        internal Token Token { get; private set; }
+
+        public Num(Token token)
+        {
+            this.Token = token;
+        }
+
+        override public object Accept(INodeVisitor visitor)
+        {
+            return visitor.VisitNum(this.Token);
+        }
+    }
+
+    internal class UnaryOp : Expression
+    {
+        internal Token Op { get; private set; }
+        internal Expression Node { get; private set; }
+
+        public UnaryOp(Token op, Expression node)
+        {
+            this.Op = op;
+            this.Node = node;
+        }
+
+        override public object Accept(INodeVisitor visitor)
+        {
+            return visitor.VisitUnaryOp(this.Op, this.Node);
+        }
+    }
+
+    internal class BinOp : Expression
+    {
+        internal Token Op { get; private set; }
+        internal Expression Left { get; private set; }
+        internal Expression Right { get; private set; }
+
+        public BinOp(Token op, Expression left, Expression right)
+        {
+            this.Op = op;
+            this.Left = left;
+            this.Right = right;
+        }
+
+        override public object Accept(INodeVisitor visitor)
+        {
+            return visitor.VisitBinOp(this.Op, this.Left, this.Right);
+        }
+    }
+
+}
